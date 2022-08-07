@@ -1,110 +1,165 @@
 import React, { useEffect, useState } from "react";
-import { useSelector, useDispatch } from "react-redux";
-import { View, Text as T, StyleSheet, TouchableHighlight, TextInput } from "react-native";
-import { decrement, increment, waDecrement, waIncrement } from "./store/counterSlice";
+import { StyleSheet, TextInput, View, Text as T, TouchableHighlight } from "react-native";
+import { useDispatch, useSelector } from "react-redux";
+import { appendTodo, deleteTodo, setTodos } from "./store/todoSlice";
+import AsyncStorage from "@react-native-async-storage/async-storage"
 
-const Text = ({children, style}) =>{
+const Text = ({children, textColor = "white", style}) =>{
   return (
-    <T style={[styles.text, style]}>
+    <T style={[styles.text, {color: textColor}, style]}>
       {children}
     </T>
   )
 }
 
-const Btn = ({children, onPress, textColor = "black"}) =>{
+
+const Todo = ({todo, onDelete, id}) =>{
+
   return (
-    <TouchableHighlight onPress={onPress} style={styles.btn}>
-      <Text style={[{color: textColor}]}>
+    <View style={styles.todo}>
+      <Text style={{padding: 10}}>
+        {todo}
+      </Text>
+      <Btn
+        onPress={() => {
+          onDelete(id)
+        }}
+        style={{width: 45, height: 45, backgroundColor: "black"}}>SİL</Btn>
+    </View>
+  )
+}
+
+
+const Input = ({children, value, onChangeText, style, placeholder, placeholderTextColor}) =>{
+  return (
+    <TextInput
+      value={value} 
+      onChangeText={onChangeText} 
+      style={[styles.input, style]}
+      placeholder={placeholder}
+      placeholderTextColor={placeholderTextColor}
+    />
+  )
+}
+
+const Btn = ({children, style, onPress}) =>{
+  return (
+    <TouchableHighlight
+     style={[styles.btn, style]}
+     onPress={onPress}
+     >
+      <Text>
         {children}
       </Text>
     </TouchableHighlight>
   )
 }
 
-const Input = ({ onChangeText, placeholder, phTextColor = "black", value }) =>{
-  return (
-    <TextInput
-      style={styles.input}
-      placeholder={placeholder}
-      placeholderTextColor={phTextColor} 
-      value={value}
-      onChangeText={onChangeText}
-      />
-  )
-}
-
 const App = () =>{
-  const count = useSelector(state => state.counter.value)
+
+  const [text, setText] = useState("")
   const dispatch = useDispatch()
-  const [val, setVal] = useState(0)
+  const todos = useSelector(state => state.todo.todos)
+
+  const onSubmit = () =>{
+    if(text.length > 0){
+      dispatch(appendTodo(text))
+    }
+  }
+
+  const onDelete = (id) =>{
+    dispatch(deleteTodo(id))
+  }
+
+  useEffect(() =>{
+    (async () =>{
+      const todos = await AsyncStorage.getItem("todos")
+      const tds = JSON.parse(todos)
+      dispatch(setTodos(tds.todos))
+    })()
+  }, [])
+
 
   return (
-      <View style={styles.container}>
-        <Text>{count}</Text>
-        <View style={styles.center}>
-            <Input placeholder={"Amount"} value={val} onChangeText={t => setVal(t.length > 0 ? t : 0)} />
-          <View style={styles.buttons}>
-            <Btn textColor={"white"} onPress={() =>{
-              dispatch(increment())
-            }}>+</Btn>
-            <Btn textColor={"white"} onPress={() =>{
-              dispatch(decrement())
-            }}>-</Btn>
-          </View>
-          <View style={styles.wa}>
-          <Text>With Amount</Text>
-            <View style={styles.buttons}>
-              <Btn textColor={"white"} onPress={() =>{
-                dispatch(waIncrement(parseInt(val)))
-              }}>+</Btn>
-              <Btn textColor={"white"} onPress={() =>{
-                dispatch(waDecrement(parseInt(val)))
-              }}>-</Btn>
-            </View>
-          </View>
-        </View>
-      </View> 
+    <View style={styles.container}>
+      <View style={styles.valueArea}>
+        <Input
+         value={text}
+          onChangeText={t => setText(t.length > 0 ? t : "")} 
+          style={styles.input} 
+          placeholder={"Todo"}
+          placeholderTextColor={"black"}
+          />
+          <Btn 
+          style={{alignSelf: "center"}} 
+          onPress={onSubmit}
+          
+          >
+            Todo Ekle
+          </Btn>
+      </View>
+      <View style={styles.todos}>
+        {todos.length > 0 ? todos.map((todo, i) => {
+          return <Todo key={i} todo={todo.todo} id={i} onDelete={onDelete} />
+        }) : <View style={styles.center}>
+          <Text textColor={"black"}>Henüz todo eklememişsin!</Text>
+        </View>}
+      </View>
+    </View>
   )
 }
+
 
 const styles = StyleSheet.create({
   container: {
+    flex: 1
+  },
+  center: {
+    flex: 1,
+    justifyContent: "center",
+    alignItems: "center"
+  },
+  todo: {
+    width: "90%",
+    minHeight: 50,
+    borderRadius: 10,
+    backgroundColor: "#9683ec",
+    marginVertical: 5,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    alignItems: "center"
+  },
+  todos: {
     flex: 1,
     alignItems: "center",
-    justifyContent: "center"
+    marginVertical: 10
+  },
+  input: {
+    borderWidth: 2,
+    borderColor: "#9683ec",
+    width: "95%",
+    height: 50,
+    alignSelf: "center",
+    padding: 10,
+    borderRadius: 10
   },
   text: {
     fontSize: 20,
-    color: "black"
+    color: "white"
   },
-  buttons: {
-    flexDirection: "row",
-    justifyContent: "center",
+  valueArea: {
+    marginHorizontal: 20,
     marginVertical: 20
   },
   btn: {
-    width: 100,
+    width: "50%",
     height: 50,
-    backgroundColor: "black",
     borderRadius: 20,
-    marginHorizontal: 5,
+    backgroundColor: "#9683ec",
     justifyContent: "center",
-    alignItems: "center"
-  },
-  input: {
-    width: "75%",
-    height: 50,
-    borderWidth: 2,
-    borderRadius: 15,
-    alignSelf: "center",
-    paddingHorizontal: 10
-  },
-  center: {
-    width: "100%",
-    marginVertical: 50
-  },
-  wa: {
-    alignItems: "center"
+    alignItems: "center",
+    marginVertical: 10,
+    marginHorizontal: 5
   }
 })
 
