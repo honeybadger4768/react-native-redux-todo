@@ -1,3 +1,1 @@
-<video width="100%" height="30%" controls>
-    <source src="example/video.mp4" type="video/mp4"> />
-</video>
+https://user-images.githubusercontent.com/69468559/183298336-14459f4a-9359-4f13-b869-f000d826367a.mp4
