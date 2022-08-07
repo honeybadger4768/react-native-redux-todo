@@ -15,7 +15,6 @@ export const counter = createSlice({
             state.value -= 1
         },
         waIncrement: (state, action) =>{
-            console.log(action.payload)
             if(typeof action.payload === "number"){
                 state.value += action.payload
             }
