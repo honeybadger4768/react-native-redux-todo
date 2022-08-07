@@ -13,9 +13,20 @@ export const counter = createSlice({
         },
         decrement: (state) =>{
             state.value -= 1
+        },
+        waIncrement: (state, action) =>{
+            console.log(action.payload)
+            if(typeof action.payload === "number"){
+                state.value += action.payload
+            }
+        },
+        waDecrement: (state, action) =>{
+            if(typeof action.payload === "number"){
+                state.value -= action.payload        
+            }
         }
     }
 })
 
-export const { increment, decrement } = counter.actions
+export const { increment, decrement, waDecrement, waIncrement } = counter.actions
 export default counter.reducer
