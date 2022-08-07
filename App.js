@@ -42,7 +42,7 @@ const App = () =>{
       <View style={styles.container}>
         <Text>{count}</Text>
         <View style={styles.center}>
-            <Input placeholder={"Amount"} value={val} onChangeText={t => setVal(t)} />
+            <Input placeholder={"Amount"} value={val} onChangeText={t => setVal(t.length > 0 ? t : 0)} />
           <View style={styles.buttons}>
             <Btn textColor={"white"} onPress={() =>{
               dispatch(increment())
