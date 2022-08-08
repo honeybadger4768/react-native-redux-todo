@@ -1,7 +1,7 @@
-import React, { useEffect, useState } from "react";
-import { StyleSheet, TextInput, View, Text as T, TouchableHighlight } from "react-native";
+import React, { Children, useEffect, useState } from "react";
+import { StyleSheet, TextInput, View, Text as T, TouchableHighlight, Image } from "react-native";
 import { useDispatch, useSelector } from "react-redux";
-import { appendTodo, deleteTodo, setTodos } from "./store/todoSlice";
+import { appendTodo, deleteTodo, setTodos, completeTodo } from "./store/todoSlice";
 import AsyncStorage from "@react-native-async-storage/async-storage"
 
 const Text = ({children, textColor = "white", style}) =>{
@@ -13,18 +13,30 @@ const Text = ({children, textColor = "white", style}) =>{
 }
 
 
-const Todo = ({todo, onDelete, id}) =>{
+const Todo = ({todo, onDelete, id, isCompleted, onComplete}) =>{
 
   return (
     <View style={styles.todo}>
       <Text style={{padding: 10}}>
         {todo}
       </Text>
+      {isCompleted && <View 
+      style={{width: "100%",
+       position: "absolute", height: 2, backgroundColor: "black", zIndex: 999}} />}
+      <View style={styles.todobtns}>
       <Btn
+        text={false}
         onPress={() => {
           onDelete(id)
         }}
-        style={{width: 45, height: 45, backgroundColor: "black"}}>SİL</Btn>
+        style={{width: 45, height: 45, backgroundColor: "black"}}>{require("./assets/trash.png")}</Btn>
+        <Btn
+        text={false}
+        onPress={() => {
+          onComplete(id)
+        }}
+        style={{width: 45, height: 45, backgroundColor: "black"}}>{require("./assets/done.png")}</Btn>
+      </View>
     </View>
   )
 }
@@ -42,15 +54,15 @@ const Input = ({children, value, onChangeText, style, placeholder, placeholderTe
   )
 }
 
-const Btn = ({children, style, onPress}) =>{
+const Btn = ({children, style, onPress, text = true}) =>{
   return (
     <TouchableHighlight
-     style={[styles.btn, style]}
+     style={[styles.btn, style, {backgroundColor: !text ? "white" : "black"}]}
      onPress={onPress}
      >
-      <Text>
+      {text ? <Text>
         {children}
-      </Text>
+      </Text> : <Image source={children} style={styles.image} />}
     </TouchableHighlight>
   )
 }
@@ -69,6 +81,10 @@ const App = () =>{
 
   const onDelete = (id) =>{
     dispatch(deleteTodo(id))
+  }
+
+  const onComplete = (id) =>{
+    dispatch(completeTodo(id))
   }
 
   useEffect(() =>{
@@ -100,7 +116,7 @@ const App = () =>{
       </View>
       <View style={styles.todos}>
         {todos.length > 0 ? todos.map((todo, i) => {
-          return <Todo key={i} todo={todo.todo} id={i} onDelete={onDelete} />
+          return <Todo key={i} todo={todo.todo} id={i} onDelete={onDelete} onComplete={onComplete} isCompleted={todo.completed} />
         }) : <View style={styles.center}>
           <Text textColor={"black"}>Henüz todo eklememişsin!</Text>
         </View>}
@@ -160,6 +176,14 @@ const styles = StyleSheet.create({
     alignItems: "center",
     marginVertical: 10,
     marginHorizontal: 5
+  },
+  image: {
+    width: "85%",
+    height: "85%",
+    resizeMode: 'stretch',
+  },
+  todobtns: {
+    flexDirection: "row"
   }
 })
 

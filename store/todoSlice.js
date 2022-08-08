@@ -29,9 +29,14 @@ const todoSlice = createSlice({
             const tds = state.todos.filter((s, i) => i !== id)
             state.todos = tds
             AsyncStorage.setItem("todos", JSON.stringify({todos: state.todos}))
+        },
+        completeTodo: (state, action) =>{
+            const id = action.payload
+            state.todos[id].completed = !state.todos[id].completed
+            AsyncStorage.setItem("todos", JSON.stringify({todos: state.todos}))
         }
     }
 })
 
-export const { appendTodo, deleteTodo, setTodos } = todoSlice.actions
+export const { appendTodo, deleteTodo, setTodos, completeTodo } = todoSlice.actions
 export default todoSlice.reducer
